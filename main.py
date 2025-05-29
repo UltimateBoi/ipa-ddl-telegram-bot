@@ -1,6 +1,5 @@
 import os
 import re
-import asyncio
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
 
@@ -26,13 +25,11 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 if __name__ == "__main__":
     telegram_app = ApplicationBuilder().token(os.environ['BOT_TOKEN']).build()
 
-    asyncio.run(telegram_app.bot.delete_webhook(drop_pending_updates=True))
-
     telegram_app.add_handler(CommandHandler("start", start))
     telegram_app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
     print("Bot is running...")
-    telegram_app.run_polling(close_loop=False, drop_pending_updates=True)
+    telegram_app.run_polling(drop_pending_updates=True, close_loop=False)
 
 # To keep bot up 24/7
 from flask import Flask as _Flask
