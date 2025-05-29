@@ -1,5 +1,6 @@
 import os
 import re
+import asyncio
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
 
@@ -23,24 +24,28 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("📲 Send an App Store link, and I’ll give you the direct download link!")
 
 if __name__ == "__main__":
-    app = ApplicationBuilder().token(os.environ['BOT_TOKEN']).build()
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+    telegram_app = ApplicationBuilder().token(os.environ['BOT_TOKEN']).build()
+
+    asyncio.run(telegram_app.bot.delete_webhook(drop_pending_updates=True))
+
+    telegram_app.add_handler(CommandHandler("start", start))
+    telegram_app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+
     print("Bot is running...")
-    app.run_polling(close_loop=False)
+    telegram_app.run_polling(close_loop=False, drop_pending_updates=True)
 
 # To keep bot up 24/7
-from flask import Flask
+from flask import Flask as _Flask
 import threading
 
-app = Flask(__name__)
+flask_app = _Flask(__name__)
 
-@app.route('/')
+@flask_app.route('/')
 def home():
     return "Bot is alive"
 
 def run_flask():
-    app.run(host="0.0.0.0", port=10000)
+    flask_app.run(host="0.0.0.0", port=10000)
 
-# Start Flask server in a thread
-threading.Thread(target=run_flask).start()
+# start Flask in its own daemon thread
+threading.Thread(target=run_flask, daemon=True).start()
