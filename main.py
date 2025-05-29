@@ -42,7 +42,9 @@ def home():
     return "Bot is alive"
 
 def run_flask():
-    flask_app.run(host="0.0.0.0", port=10000)
+    # Render provides the port via the PORT env var
+    port = int(os.environ.get("PORT", 10000))
+    flask_app.run(host="0.0.0.0", port=port)
 
 # start Flask in its own daemon thread
 threading.Thread(target=run_flask, daemon=True).start()
